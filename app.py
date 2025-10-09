@@ -4,9 +4,8 @@ from flask import Flask
 # __name__ argument helps Flask to know where to find resources like templates.
 app = Flask(__name__)
 
+
 # Basic route definition
-
-
 @app.route('/')
 def home():
     return "Hello, World!"
