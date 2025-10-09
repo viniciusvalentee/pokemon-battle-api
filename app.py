@@ -33,8 +33,8 @@ def battle():
 
     # 3. Fetch Pokemon data from PokeAPI
     try:
-        pokemon1_details = get_pokemon_details(pokemon1_id)
-        pokemon2_details = get_pokemon_details(pokemon2_id)
+        pokemon1_data = get_pokemon_details(pokemon1_id)
+        pokemon2_data = get_pokemon_details(pokemon2_id)
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Error fetching data from PokeAPI.",
@@ -46,10 +46,27 @@ def battle():
     # Here, we would use the details to extract types and calculate the result.
     # For now, we will just return the fetched details.
     return jsonify({
-        "pokemon1": pokemon1_details,
-        "pokemon2": pokemon2_details,
-        "message": "Battle logic not implemented yet."
+        "status": "Next step is the battle logic.",
+        "pokemon1_name": pokemon1_data['name'],
+        "pokemon1_types": pokemon1_data['types'],
+        "pokemon2_name": pokemon2_data['name'],
+        "pokemon2_types": pokemon2_data['types'],
     }), 200
+
+
+def extract_types(pokemon_data):
+    """
+    Extracts the pokemon types list.
+    """
+    types_list = []
+    # The 'types' property is a list
+    for type_info in pokemon_data.get('types', []):
+        # The type info is inside the 'type' dict
+        # The name type is the 'name' property inside
+        type_name = type_info['type']['name']
+        types_list.append(type_name)
+
+    return types_list
 
 
 def get_pokemon_details(pokemon_id):
@@ -61,7 +78,19 @@ def get_pokemon_details(pokemon_id):
 
     # Check if the response was successful
     if response.status_code == 200:
-        return response.json()
+        pokemon_data = response.json()
+
+        # 1. Extract the type using the 'extract_types' function
+        types = extract_types(pokemon_data)
+
+        # 2. Extract the name
+        name = pokemon_data.get('name')
+
+        # Returning a simplified dict with what we need
+        return {
+            'name': name,
+            'types': types
+        }
     elif response.status_code == 404:
         raise ValueError(f"Pokemon with id {pokemon_id} not found.")
     else:
