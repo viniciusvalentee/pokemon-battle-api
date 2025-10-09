@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
-
+from battle_logic import determine_winner
 # Base URL for the PokeAPI
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/"
 
@@ -42,15 +42,18 @@ def battle():
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 404
 
-    # TODO: 4. Battle logic
-    # Here, we would use the details to extract types and calculate the result.
-    # For now, we will just return the fetched details.
+    # 4. Battle logic
+    results_list = determine_winner(
+        p1_name=pokemon1_data['name'],
+        p1_types=pokemon1_data['types'],
+        p2_name=pokemon2_data['name'],
+        p2_types=pokemon2_data['types']
+    )
+
     return jsonify({
-        "status": "Next step is the battle logic.",
-        "pokemon1_name": pokemon1_data['name'],
-        "pokemon1_types": pokemon1_data['types'],
-        "pokemon2_name": pokemon2_data['name'],
-        "pokemon2_types": pokemon2_data['types'],
+        "pokemon1": pokemon1_data['name'],
+        "pokemon2": pokemon2_data['name'],
+        "results": results_list
     }), 200
 
 
