@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 from battle_logic import determine_winner
+from pokemon_data_factory import PokemonFactory
 # Base URL for the PokeAPI
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/"
 
@@ -33,8 +34,8 @@ def battle():
 
     # 3. Fetch Pokemon data from PokeAPI
     try:
-        pokemon1_data = get_pokemon_details(pokemon1_id)
-        pokemon2_data = get_pokemon_details(pokemon2_id)
+        pokemon1_data = get_pokemon_data(pokemon1_id)
+        pokemon2_data = get_pokemon_data(pokemon2_id)
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": "Error fetching data from PokeAPI.",
@@ -72,32 +73,32 @@ def extract_types(pokemon_data):
     return types_list
 
 
-def get_pokemon_details(pokemon_id):
+def fetch_pokemon_json(pokemon_id):
     """"Make the API call to PokeAPI and return JSON data."""
     url = f"{POKEAPI_URL}{pokemon_id}/"  # Creates the URL: https://pokeapi.co/api/v2/pokemon/{id}
-
-    # Make the GET request to PokeAPI
     response = requests.get(url)
 
     # Check if the response was successful
     if response.status_code == 200:
         pokemon_data = response.json()
-
-        # 1. Extract the type using the 'extract_types' function
-        types = extract_types(pokemon_data)
-
-        # 2. Extract the name
-        name = pokemon_data.get('name')
-
-        # Returning a simplified dict with what we need
-        return {
-            'name': name,
-            'types': types
-        }
+        return pokemon_data
     elif response.status_code == 404:
         raise ValueError(f"Pokemon with id {pokemon_id} not found.")
     else:
         response.raise_for_status()  # Raise an error for other bad responses
+
+# Funções que usam a nova lógica de Factory
+
+
+def get_pokemon_data(pokemon_id):
+    """
+    Orchestrates the search and creation of the simplified data object.
+    """
+    # 1. Fetches the raw data (responsibility of the fetch function)
+    raw_data = fetch_pokemon_json(pokemon_id)
+
+    # 2. Creates the simplified data object (Factory's responsibility)
+    return PokemonFactory.create_data(raw_data)
 
 # A simple route to test if the server is running
 
