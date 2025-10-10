@@ -44,15 +44,15 @@ def battle():
 
     # 4. Battle logic
     results_list = determine_winner(
-        p1_name=pokemon1_data['name'],
-        p1_types=pokemon1_data['types'],
-        p2_name=pokemon2_data['name'],
-        p2_types=pokemon2_data['types']
+        p1_name=pokemon1_data['name'],  # type: ignore
+        p1_types=pokemon1_data['types'],  # type: ignore
+        p2_name=pokemon2_data['name'],  # type: ignore
+        p2_types=pokemon2_data['types']  # type: ignore
     )
 
     return jsonify({
-        "pokemon1": pokemon1_data['name'],
-        "pokemon2": pokemon2_data['name'],
+        "pokemon1": pokemon1_data['name'],  # type: ignore
+        "pokemon2": pokemon2_data['name'],  # type: ignore
         "results": results_list
     }), 200
 
