@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
-from battle_logic import determine_winner
+from battle_logic import BattleLogic
 from pokemon_data_factory import PokemonFactory
 # Base URL for the PokeAPI
 POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/"
@@ -43,8 +43,9 @@ def battle():
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 404
 
+    battle_system = BattleLogic()  # Uses the default StandardTypeRule
     # 4. Battle logic
-    results_list = determine_winner(
+    results_list = battle_system.determine_winner(
         p1_name=pokemon1_data['name'],  # type: ignore
         p1_types=pokemon1_data['types'],  # type: ignore
         p2_name=pokemon2_data['name'],  # type: ignore
