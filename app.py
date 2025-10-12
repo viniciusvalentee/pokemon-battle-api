@@ -98,7 +98,7 @@ def get_pokemon_data(pokemon_id):
     raw_data = fetch_pokemon_json(pokemon_id)
 
     # 2. Creates the simplified data object (Factory's responsibility)
-    return PokemonFactory.create_data(raw_data)
+    return PokemonFactory.create_data(raw_data)  # type: ignore
 
 # A simple route to test if the server is running
 
