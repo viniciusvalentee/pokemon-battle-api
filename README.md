@@ -62,7 +62,7 @@ curl -X POST [http://127.0.0.1:5000/battle](http://127.0.0.1:5000/battle) \
     "pokemon2": "squirtle",
     "results": [
       "Pikachu's Electric type is strong against Squirtle's Water type.",
-      "Vencedor: Pikachu for having more advantages (1 to 0)."
+      "Winner: Pikachu for having more advantages (1 to 0)."
     ]
   }
   ```
