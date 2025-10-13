@@ -1,5 +1,3 @@
-# pokemon_data_factory.py
-
 class PokemonFactory:
     """
     Implements the Factory Method Pattern.
@@ -33,7 +31,3 @@ class PokemonFactory:
             'name': name,
             'types': types
         }
-
-# Example usage:
-# data = requests.get(...).json()
-# clean_pokemon = PokemonFactory.create_data(data)

@@ -34,7 +34,7 @@ def start_game():
     player2 = data.get('player2_name')
 
     GLOBAL_SCOREBOARD.clear()
-    # Inicializa o placar
+    # Starts the scoreboard
     GLOBAL_SCOREBOARD.update({
         "player1_name": player1,
         "player2_name": player2,
@@ -161,8 +161,6 @@ def fetch_pokemon_json(pokemon_id):
         raise ValueError(f"Pokemon with id {pokemon_id} not found.")
     else:
         response.raise_for_status()  # Raise an error for other bad responses
-
-# Funções que usam a nova lógica de Factory
 
 
 def get_pokemon_data(pokemon_id):

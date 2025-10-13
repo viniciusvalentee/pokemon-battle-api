@@ -1,5 +1,3 @@
-# type_rules.py
-
 # The interface is implicit in Python, but the documentation makes it clear
 class TypeAdvantageRule:
     """
@@ -12,8 +10,6 @@ class TypeAdvantageRule:
         """Should return a dictionary of advantages."""
         raise NotImplementedError(
             "Subclasses must implement this method.")
-
-# Implementação Concreta 1: A Regra Padrão do Jogo
 
 
 class StandardTypeRule(TypeAdvantageRule):

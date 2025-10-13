@@ -83,7 +83,7 @@ def test_battle_endpoint_invalid_id(client, requests_mock):
 
 
 def test_start_game_success(client):
-    """Testa se o endpoint /start inicializa o placar corretamente."""
+    """Tests whether the /start endpoint initializes the scoreboard correctly."""
     player_data = {"player1_name": "Ash", "player2_name": "Gary"}
     response = client.post('/start',
                            data=json.dumps(player_data),
@@ -97,7 +97,7 @@ def test_start_game_success(client):
 
 
 def test_battle_before_start_failure(client):
-    """Testa se chamar /battle antes de /start retorna erro 403."""
+    """Test if calling /battle before /start returns error 403."""
     battle_data = {"pokemon1": 6, "pokemon2": 9}
     response = client.post('/battle',
                            data=json.dumps(battle_data),
@@ -109,24 +109,24 @@ def test_battle_before_start_failure(client):
 
 
 def test_battle_player1_wins_and_updates_score(client, requests_mock):
-    """Testa se o placar atualiza corretamente quando o Jogador 1 vence."""
-    # Setup: Inicia o jogo
+    """Tests whether the scoreboard updates correctly when Player 1 wins."""
+    # Setup: Starts game
     client.post('/start', data=json.dumps({"player1_name": "Ash",
                 "player2_name": "Gary"}), content_type='application/json')
 
-    # Mocks: P1 (Water) vs P2 (Fire). Water > Fire. P1 vence (Blastoise)
+    # Mocks: P1 (Water) vs P2 (Fire). Water > Fire. P1 wins (Blastoise)
     requests_mock.get(f"{POKEAPI_URL}9/",
                       json=MOCK_BLASTOISE, status_code=200)  # P1
     requests_mock.get(f"{POKEAPI_URL}6/",
                       json=MOCK_CHARIZARD, status_code=200)  # P2
 
-    # Batalha: P1 (9) vs P2 (6)
+    # Battle: P1 (9) vs P2 (6)
     battle_data = {"pokemon1": 9, "pokemon2": 6}
     response = client.post('/battle',
                            data=json.dumps(battle_data),
                            content_type='application/json')
 
-    # Checa o placar
+    # Check scoreboard
     assert response.status_code == 200
     data = response.get_json()
     assert data["round_winner"] == "Ash"
@@ -135,12 +135,12 @@ def test_battle_player1_wins_and_updates_score(client, requests_mock):
 
 
 def test_battle_tie_no_score_update(client, requests_mock):
-    """Testa se em caso de empate o placar não é alterado."""
-    # Setup: Inicia o jogo
+    """Tests whether the score is not changed in case of a tie."""
+    # Setup: Starts game
     client.post('/start', data=json.dumps({"player1_name": "Ash",
                 "player2_name": "Gary"}), content_type='application/json')
 
-    # Mocks: P1 (Normal) vs P2 (Normal). Empate.
+    # Mocks: P1 (Normal) vs P2 (Normal). Tie.
     MOCK_SNORLAX = {
         "name": "snorlax",
         "id": 143,
@@ -150,22 +150,20 @@ def test_battle_tie_no_score_update(client, requests_mock):
     requests_mock.get(f"{POKEAPI_URL}143/", json=MOCK_SNORLAX, status_code=200)
     requests_mock.get(f"{POKEAPI_URL}143/", json=MOCK_SNORLAX, status_code=200)
 
-    # Batalha: P1 (143) vs P2 (143)
     battle_data = {"pokemon1": 143, "pokemon2": 143}
     response = client.post('/battle',
                            data=json.dumps(battle_data),
                            content_type='application/json')
 
-    # Checa o resultado
     assert response.status_code == 200
     data = response.get_json()
     assert data["round_winner"] == "Nobody (tie)"
-    assert data["scoreboard"]["player1_score"] == 0  # Deve ser zero
-    assert data["scoreboard"]["player2_score"] == 0  # Deve ser zero
+    assert data["scoreboard"]["player1_score"] == 0
+    assert data["scoreboard"]["player2_score"] == 0
 
 
 def test_get_scoreboard(client):
-    """Testa o endpoint /scoreboard."""
+    """Tests the endpoint /scoreboard."""
     client.post('/start', data=json.dumps({"player1_name": "Ash",
                 "player2_name": "Gary"}), content_type='application/json')
     response = client.get('/scoreboard')
