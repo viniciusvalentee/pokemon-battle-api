@@ -51,12 +51,12 @@ class BattleLogic:
 
         if p1_score > p2_score:
             results.append(
-                f"Winner: {p1_name.capitalize()} for having more advantages ({p1_score} to {p2_score}).")
+                f"Winner: {p1_name.capitalize()}.")
         elif p2_score > p1_score:
             results.append(
-                f"Winner: {p2_name.capitalize()} for having more advantages ({p2_score} to {p1_score}).")
+                f"Winner: {p2_name.capitalize()}.")
         elif p1_score > 0 and p1_score == p2_score:
             results.append(
-                f"It's a tie! Both Pokémon have the same number of advantages. ({p1_score} to {p2_score}).")
+                f"It's a tie! Both Pokémon have the same number of advantages.")
 
         return results

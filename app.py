@@ -10,12 +10,57 @@ POKEAPI_URL = "https://pokeapi.co/api/v2/pokemon/"
 app = Flask(__name__)
 
 # The /battle endpoint should accept only POST requests
+# In real applications, this would be replaced by a Database or Cache (Redis).
+GLOBAL_SCOREBOARD = {}
+# We initialize the battle logic outside the endpoint (OCP applied)
+BATTLE_SYSTEM = BattleLogic()  # Uses the default StandardTypeRule
+
+
+@app.route('/start', methods=['POST'])
+def start_game():
+    """
+    Endpoint to start the game, registering the names of both players.
+    """
+    global GLOBAL_SCOREBOARD
+    data = request.get_json()
+
+    if not data or 'player1_name' not in data or 'player2_name' not in data:
+        return jsonify({
+            "error": "Invalid request",
+            "message": "The request body must contain 'player1_name' and 'player2_name'."
+        }), 400
+
+    player1 = data.get('player1_name')
+    player2 = data.get('player2_name')
+
+    GLOBAL_SCOREBOARD.clear()
+    # Inicializa o placar
+    GLOBAL_SCOREBOARD.update({
+        "player1_name": player1,
+        "player2_name": player2,
+        "player1_score": 0,
+        "player2_score": 0
+    })
+
+    return jsonify({
+        "status": "Game started successfully!",
+        "players": f"{player1} vs {player2}",
+        "scoreboard": GLOBAL_SCOREBOARD
+    })
 
 
 @app.route('/battle', methods=['POST'])
 def battle():
     """Receives the Pokemon ids, calls PokeAPI and starts the battle."""
 
+    global GLOBAL_SCOREBOARD
+
+    # Validation: The game must have been started
+    if not GLOBAL_SCOREBOARD:
+        return jsonify({
+            "error": "Game not started",
+            "message": "Please call the /start endpoint first to register players."
+        }), 403
     # 1. Get the JSON data from the request
     data = request.get_json()
 
@@ -43,20 +88,49 @@ def battle():
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 404
 
-    battle_system = BattleLogic()  # Uses the default StandardTypeRule
+    # 1. Get pokemon names for the response
+    p1_pokemon_name = pokemon1_data['name']
+    p2_pokemon_name = pokemon2_data['name']
+
     # 4. Battle logic
-    results_list = battle_system.determine_winner(
-        p1_name=pokemon1_data['name'],  # type: ignore
-        p1_types=pokemon1_data['types'],  # type: ignore
-        p2_name=pokemon2_data['name'],  # type: ignore
-        p2_types=pokemon2_data['types']  # type: ignore
+    results_list = BATTLE_SYSTEM.determine_winner(
+        p1_name=p1_pokemon_name,
+        p1_types=pokemon1_data['types'],
+        p2_name=p2_pokemon_name,
+        p2_types=pokemon2_data['types']
     )
 
+    # Logic to extract the winner and update the scoreboard
+    final_result_line = results_list[-1]
+    winner_name = "Nobody (tie)"  # Default value in case of tie
+
+    # The name of the winning Pokémon is in the result line (Ex: "Winner: Squirtle...")
+    if p1_pokemon_name.capitalize() in final_result_line:
+        # Pokémon 1 won, so Player 1 scores.
+        GLOBAL_SCOREBOARD['player1_score'] += 1
+        winner_name = GLOBAL_SCOREBOARD['player1_name']
+    elif p2_pokemon_name.capitalize() in final_result_line:
+        # Pokémon 2 won, so Player 2 scores.
+        GLOBAL_SCOREBOARD['player2_score'] += 1
+        winner_name = GLOBAL_SCOREBOARD['player2_name']
+
+    # Final return, including updated scoreboard
     return jsonify({
-        "pokemon1": pokemon1_data['name'],  # type: ignore
-        "pokemon2": pokemon2_data['name'],  # type: ignore
-        "results": results_list
-    }), 200
+        "pokemon1": pokemon1_data['name'],
+        "pokemon2": pokemon2_data['name'],
+        "results": results_list,
+        "round_winner": winner_name,
+        "scoreboard": GLOBAL_SCOREBOARD
+    })
+
+# Endpoint to view the scoreboard
+
+
+@app.route('/scoreboard', methods=['GET'])
+def get_scoreboard():
+    if not GLOBAL_SCOREBOARD:
+        return jsonify({"message": "No game started."}), 200
+    return jsonify(GLOBAL_SCOREBOARD)
 
 
 def extract_types(pokemon_data):
